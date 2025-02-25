@@ -9,7 +9,7 @@ Se non viene selezionato alcun genere, devono essere mostrati tutti i film.
 BONUS:
 Aggiungere un campo di ricerca per filtrare i film anche per titolo.
 Creare un sistema per aggiungere nuovi film alla lista tramite un form.*/
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const Main = () => {
   const arrayMovie = [
@@ -23,34 +23,54 @@ const Main = () => {
 
   const [movies, setMovies] = useState(arrayMovie);
 
+  const [filteredMovies, setFilteredMovies] = useState(movies);
+
+  const [search, setSearch] = useState("");
+
+  const [selectedGenre, setSelectedGenre] = useState("");
+
+  useEffect(() => {
+    let filtered = movies;
+
+    if (selectedGenre) {
+      filtered = filtered.filter((movie) => movie.genre === selectedGenre);
+    }
+
+    if (search) {
+      filtered = filtered.filter((movie) =>
+        movie.title.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    setFilteredMovies(filtered);
+  }, [search, selectedGenre, movies]);
+
   return (
     <main>
       <div className="container mt-5 w-50">
-      <select
-            class="form-select form-select-lg mb-3"
-            aria-label=".form-select-lg example"
-          >
-            <option selected>Vuoi un genere preciso?</option>
-            {
-                movies.map((element , index) =>{
-                   return(
-                   <option key={index}>
-                        {element.genre}
-                    </option>
-                )})
-            }
-            
-          </select>
+        <select
+          class="form-select form-select-lg mb-3"
+          aria-label=".form-select-lg example"
+          onChange={(e) => setSelectedGenre(e.target.value)}
+        >
+          <option value="">Tutti i generi</option>
+          {[...new Set(movies.map((m) => m.genre))].map((genre, index) => (
+            <option key={index} value={genre}>
+              {genre}
+            </option>
+          ))}
+        </select>
+
         <ul className="list-group list-group-flush">
-          {movies.map((element, index) => {
-            return (
+          {filteredMovies.length > 0 ? (
+            filteredMovies.map((movie, index) => (
               <li key={index} className="list-group-item">
-
-<span className="h3">{element.title}</span>
-
+                <span className="h3">{movie.title}</span> - {movie.genre}
               </li>
-            );
-          })}
+            ))
+          ) : (
+            <li className="list-group-item">Nessun film trovato</li>
+          )}
         </ul>
       </div>
     </main>
